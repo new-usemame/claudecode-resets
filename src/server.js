@@ -39,6 +39,33 @@ const sendPrivateJson = (res, code, obj) =>
     "cache-control": "no-store",
   });
 
+/**
+ * Small fixed-window limiter, per client and per action. There is no login here, so
+ * without it /api/email/subscribe is a way to make this site send confirmation mail to
+ * anyone, repeatedly, on someone else's say-so — and to burn the sending quota doing it.
+ * Memory-only and per-instance on purpose: this is abuse dampening, not a quota system.
+ */
+const buckets = new Map();
+function rateLimit(key, limit, windowMs) {
+  const now = Date.now();
+  const b = buckets.get(key);
+  if (!b || now > b.reset) {
+    buckets.set(key, { count: 1, reset: now + windowMs });
+    if (buckets.size > 10_000) {           // bound the map; drop whatever has expired
+      for (const [k, v] of buckets) if (now > v.reset) buckets.delete(k);
+    }
+    return true;
+  }
+  if (b.count >= limit) return false;
+  b.count += 1;
+  return true;
+}
+
+/** Best-effort client identity behind Railway's proxy. */
+const clientIp = (req) =>
+  String(req.headers["x-forwarded-for"] ?? "").split(",")[0].trim() ||
+  req.socket.remoteAddress || "unknown";
+
 /** Constant-time compare so a wrong token cannot be found one byte at a time. */
 function tokenMatches(given, expected) {
   if (typeof given !== "string" || typeof expected !== "string" || !expected) return false;
@@ -335,6 +362,9 @@ here within the hour rather than within the minute. For the instant signal follo
     }
 
     if (path === "/api/push/subscribe" && req.method === "POST") {
+      if (!rateLimit(`push:${clientIp(req)}`, 20, 60 * 60_000)) {
+        return sendJson(res, 429, { error: "too many requests" });
+      }
       const sub = JSON.parse(await readBody(req));
       if (!sub?.endpoint || !sub?.keys?.p256dh || !sub?.keys?.auth) {
         return sendJson(res, 400, { error: "invalid subscription" });
@@ -350,10 +380,18 @@ here within the hour rather than within the minute. For the instant signal follo
     }
 
     if (path === "/api/email/subscribe" && req.method === "POST") {
+      if (!rateLimit(`email:${clientIp(req)}`, 3, 60 * 60_000)) {
+        return sendJson(res, 429, { state: "error", message: "Too many attempts. Try again later." });
+      }
       const { email } = JSON.parse(await readBody(req));
       const clean = String(email ?? "").trim().toLowerCase();
       if (!/^[^@\s]+@[^@\s.]+\.[^@\s]+$/.test(clean) || clean.length > 254) {
-        return sendJson(res, 400, { error: "That doesn't look like an email address." });
+        return sendJson(res, 400, { state: "error", message: "That doesn't look like an email address." });
+      }
+      // A second window keyed on the address, so one address cannot be mailed
+      // repeatedly from many clients.
+      if (!rateLimit(`emailaddr:${clean}`, 2, 60 * 60_000)) {
+        return sendJson(res, 429, { state: "error", message: "We already sent that address a link. Check your inbox." });
       }
       const { requestEmailConfirmation } = await import("./notify.js");
       const state = await requestEmailConfirmation(db, clean);
@@ -387,6 +425,9 @@ Claude Code usage limits get reset.</p><p><a href="/">Back to the tracker</a></p
     if (path === "/api/plea") {
       const key = `plea:${url.searchParams.get("reset") ?? "none"}`;
       if (req.method === "POST") {
+        if (!rateLimit(`plea:${clientIp(req)}`, 10, 60 * 60_000)) {
+          return sendJson(res, 429, { count: Number(getKv(db, key) ?? 0) });
+        }
         const next = Number(getKv(db, key) ?? 0) + 1;
         setKv(db, key, next);
         return sendJson(res, 200, { count: next });
