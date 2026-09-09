@@ -1,7 +1,7 @@
 import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import { join, normalize, extname } from "node:path";
-import { randomUUID } from "node:crypto";
+import { randomUUID, timingSafeEqual } from "node:crypto";
 import { openDb, allEvents, resets as allResets, REPO_ROOT, getKv, setKv } from "./store.js";
 import { computeStats, buildCalendar } from "./stats.js";
 import { renderPage, SITE } from "./render.js";
@@ -24,12 +24,28 @@ const send = (res, code, body, headers = {}) => {
   res.writeHead(code, { "content-type": "text/plain; charset=utf-8", ...headers });
   res.end(body);
 };
+// The public read-only API is meant to be called from anywhere; admin replies are
+// not, so CORS is opt-in per response rather than blanket.
 const sendJson = (res, code, obj, headers = {}) =>
   send(res, code, JSON.stringify(obj), {
     "content-type": "application/json; charset=utf-8",
     "access-control-allow-origin": "*",
     ...headers,
   });
+
+const sendPrivateJson = (res, code, obj) =>
+  send(res, code, JSON.stringify(obj), {
+    "content-type": "application/json; charset=utf-8",
+    "cache-control": "no-store",
+  });
+
+/** Constant-time compare so a wrong token cannot be found one byte at a time. */
+function tokenMatches(given, expected) {
+  if (typeof given !== "string" || typeof expected !== "string" || !expected) return false;
+  const a = Buffer.from(given), b = Buffer.from(expected);
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(a, b);
+}
 
 const apiMeta = () => ({ api_version: "v1", generated_at: new Date().toISOString() });
 
@@ -227,12 +243,15 @@ const server = createServer(async (req, res) => {
     // Operational endpoints for proving the notification path actually delivers.
     // Guarded by ADMIN_TOKEN; with no token set they are simply off.
     if (path.startsWith("/api/admin/")) {
+      // Header only — a token in the query string ends up in every access log,
+      // proxy trace and Referer header along the way.
       const token = process.env.ADMIN_TOKEN;
-      const given = req.headers["x-admin-token"] ?? url.searchParams.get("token");
-      if (!token || given !== token) return sendJson(res, 404, { error: "not found" });
+      if (!tokenMatches(req.headers["x-admin-token"], token)) {
+        return sendPrivateJson(res, 404, { error: "not found" });
+      }
 
       if (path === "/api/admin/subscribers") {
-        return sendJson(res, 200, {
+        return sendPrivateJson(res, 200, {
           push: db.prepare(`SELECT COUNT(*) n FROM push_subs`).get().n,
           email_pending: db.prepare(`SELECT COUNT(*) n FROM email_subs WHERE confirmed_at IS NULL`).get().n,
           email_confirmed: db.prepare(`SELECT COUNT(*) n FROM email_subs WHERE confirmed_at IS NOT NULL`).get().n,
@@ -242,21 +261,21 @@ const server = createServer(async (req, res) => {
 
       if (path === "/api/admin/test-notify" && req.method === "POST") {
         const latest = allResets(db)[0];
-        if (!latest) return sendJson(res, 409, { error: "no reset to announce" });
+        if (!latest) return sendPrivateJson(res, 409, { error: "no reset to announce" });
         // A test must not consume the real event's once-per-event guard, so it
         // announces under a throwaway id and leaves the live record untouched.
         const { announce } = await import("./notify.js");
         const result = await announce(db, { ...latest, id: `test-${Date.now()}` });
-        return sendJson(res, 200, { announced: latest.id, delivered: result });
+        return sendPrivateJson(res, 200, { announced: latest.id, delivered: result });
       }
 
       if (path === "/api/admin/fetch-now" && req.method === "POST") {
         const { fetchOnce } = await import("./fetcher.js");
         const stored = await fetchOnce(db);
-        return sendJson(res, 200, { stored: stored.map((e) => e.id), sources: fetcherHealth(db) });
+        return sendPrivateJson(res, 200, { stored: stored.map((e) => e.id), sources: fetcherHealth(db) });
       }
 
-      return sendJson(res, 404, { error: "not found" });
+      return sendPrivateJson(res, 404, { error: "not found" });
     }
 
     if (path === "/api/push/subscribe" && req.method === "POST") {

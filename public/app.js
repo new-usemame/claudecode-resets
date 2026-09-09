@@ -118,8 +118,16 @@ const urlBase64ToUint8Array = (b64) => {
   control.hidden = false;
 
   let reg;
-  try { reg = await navigator.serviceWorker.register("/sw.js"); }
-  catch { return; }
+  try {
+    await navigator.serviceWorker.register("/sw.js");
+    // pushManager.subscribe() throws on a registration whose worker is still
+    // installing, which is exactly the state a first-time visitor is in. Waiting
+    // for an ACTIVE worker is the difference between "works" and "the button does
+    // nothing the first time you ever click it".
+    reg = await navigator.serviceWorker.ready;
+  } catch {
+    return;
+  }
 
   const setState = (on, message = "") => {
     toggle.setAttribute("aria-pressed", on ? "true" : "false");
@@ -156,7 +164,8 @@ const urlBase64ToUint8Array = (b64) => {
       if (!res.ok) throw new Error("subscribe failed");
       setState(true, "You'll get a ping on the next reset.");
     } catch (err) {
-      setState(false, "Couldn't turn that on. Try again?");
+      console.error("push subscribe failed", err);
+      setState(false, `Couldn't turn that on — ${err?.message ?? "unknown error"}`);
     } finally {
       toggle.disabled = false;
     }
