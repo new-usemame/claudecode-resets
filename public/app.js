@@ -55,18 +55,20 @@ setInterval(paintTimes, 60000);
 
   const pretty = (day) =>
     new Date(`${day}T00:00:00Z`).toLocaleDateString(undefined, {
-      weekday: "short", month: "short", day: "numeric", year: "numeric", timeZone: "UTC",
+      month: "short", day: "numeric", year: "numeric", timeZone: "UTC",
     });
+
+  const esc = (s) => s.replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c]));
 
   function show(cell) {
     const { date, count, snippet, resetType } = cell.dataset;
     const n = Number(count || 0);
-    const head = n
-      ? `${n} ${resetType ?? ""} reset${n === 1 ? "" : "s"} · ${pretty(date)}`
-      : `No reset · ${pretty(date)}`;
-    tip.innerHTML = snippet
-      ? `${head}<div class="cg-tooltip-snippet">${snippet.replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" }[c]))}…</div>`
-      : head;
+    // Same shape as the reference: the day first, then what happened, then the words.
+    const label = n
+      ? `${n > 1 ? `${n} ` : ""}${resetType === "partial" ? "Partial" : "Full"} reset${n > 1 ? "s" : ""}`
+      : "No reset";
+    tip.innerHTML = `${pretty(date)} (UTC)<div>${label}</div>` +
+      (snippet ? `<div class="cg-tooltip-snippet">${esc(snippet)}…</div>` : "");
     tip.hidden = false;
     const box = cell.getBoundingClientRect();
     const host = grid.parentElement.getBoundingClientRect();
