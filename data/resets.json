@@ -1,0 +1,255 @@
+{
+  "$schema": "https://claudecode-resets.com/api/openapi.json",
+  "source": {
+    "account": "ClaudeDevs",
+    "url": "https://x.com/ClaudeDevs",
+    "note": "Claude Code usage-limit announcements from @ClaudeDevs and Claude Code team members. Text is the verbatim X post."
+  },
+  "events": [
+    {
+      "id": "2095967323412930677",
+      "kind": "reset",
+      "reset_type": "partial",
+      "scope": "Claude Max plans",
+      "announced_at": "2026-09-04T20:08:45.000Z",
+      "text": "We've just reset weekly limits for everyone on a Claude Max plan.\n\nWith Fable 5.1 out and a long weekend ahead for many of you, we wanted to keep you building. I'd love to see what you build!",
+      "source": {
+        "type": "x_post",
+        "author": "lydiahallie",
+        "url": "https://x.com/lydiahallie/status/2095967323412930677"
+      },
+      "verification": "curated",
+      "verified_at": "2026-09-09T18:49:17.115Z",
+      "verified_via": "x-syndication"
+    },
+    {
+      "id": "2093742321473065266",
+      "kind": "policy",
+      "reset_type": null,
+      "scope": "Pro, Max, Team, Enterprise",
+      "announced_at": "2026-08-29T16:47:23.000Z",
+      "text": "Starting September 14, we're permanently raising standard weekly limits in Claude Code by 25% for Pro, Max, Team, and seat-based Enterprise plans. Until then, the current 50% increase will be in place.",
+      "source": {
+        "type": "x_post",
+        "author": "ClaudeDevs",
+        "url": "https://x.com/ClaudeDevs/status/2093742321473065266"
+      },
+      "verification": "curated",
+      "verified_at": "2026-09-09T18:49:17.989Z",
+      "verified_via": "x-syndication"
+    },
+    {
+      "id": "2089798442306711646",
+      "kind": "policy",
+      "reset_type": null,
+      "scope": "Pro, Max, Team, Enterprise",
+      "announced_at": "2026-08-18T19:35:49.000Z",
+      "text": "We’re extending the 50% increase to weekly Claude Code limits through August 31. \n\nWe hope to make this a permanent change to our plans, but strong demand for our models means that capacity may be tight over the coming weeks. We’ll keep you posted as things develop.",
+      "source": {
+        "type": "x_post",
+        "author": "ClaudeDevs",
+        "url": "https://x.com/ClaudeDevs/status/2089798442306711646"
+      },
+      "verification": "curated",
+      "verified_at": "2026-09-09T18:49:18.864Z",
+      "verified_via": "x-syndication"
+    },
+    {
+      "id": "2078511173759324328",
+      "kind": "policy",
+      "reset_type": null,
+      "scope": "Pro, Max, Team, Enterprise",
+      "announced_at": "2026-07-18T16:04:15.000Z",
+      "text": "We're also keeping Claude Code weekly limits 50% higher, now through August 19, for all Pro, Max, Team, and seat-based Enterprise users.",
+      "source": {
+        "type": "x_post",
+        "author": "ClaudeDevs",
+        "url": "https://x.com/ClaudeDevs/status/2078511173759324328"
+      },
+      "verification": "curated",
+      "verified_at": "2026-09-09T18:49:19.747Z",
+      "verified_via": "x-syndication"
+    },
+    {
+      "id": "2077603834453770467",
+      "kind": "reset",
+      "reset_type": "full",
+      "scope": "all users",
+      "announced_at": "2026-07-16T03:58:48.000Z",
+      "text": "We've reset 5-hour and weekly rate limits for all users.",
+      "source": {
+        "type": "x_post",
+        "author": "ClaudeDevs",
+        "url": "https://x.com/ClaudeDevs/status/2077603834453770467"
+      },
+      "verification": "curated",
+      "verified_at": "2026-09-09T18:49:20.629Z",
+      "verified_via": "x-syndication"
+    },
+    {
+      "id": "2075279141352706215",
+      "kind": "reset",
+      "reset_type": "full",
+      "scope": "all users",
+      "announced_at": "2026-07-09T18:01:18.000Z",
+      "text": "We've reset 5-hour and weekly rate limits for all users.",
+      "source": {
+        "type": "x_post",
+        "author": "ClaudeDevs",
+        "url": "https://x.com/ClaudeDevs/status/2075279141352706215"
+      },
+      "verification": "curated",
+      "verified_at": "2026-09-09T18:49:21.496Z",
+      "verified_via": "x-syndication"
+    },
+    {
+      "id": "2072429181565288665",
+      "kind": "reset",
+      "reset_type": "full",
+      "scope": "everyone",
+      "announced_at": "2026-07-01T21:16:35.000Z",
+      "text": "Now that Fable 5 is ready to build (again), we've reset everyone's 5-hour and weekly rate limits.",
+      "source": {
+        "type": "x_post",
+        "author": "ClaudeDevs",
+        "url": "https://x.com/ClaudeDevs/status/2072429181565288665"
+      },
+      "verification": "curated",
+      "verified_at": "2026-09-09T18:49:22.364Z",
+      "verified_via": "x-syndication"
+    },
+    {
+      "id": "2068122937308426676",
+      "kind": "reset",
+      "reset_type": "full",
+      "scope": "everyone, all plans",
+      "announced_at": "2026-06-20T00:05:06.000Z",
+      "text": "Update: we've gone ahead and reset 5-hour and weekly usage limits for everyone, across all plans. Enjoy your weekend!",
+      "source": {
+        "type": "x_post",
+        "author": "ClaudeDevs",
+        "url": "https://x.com/ClaudeDevs/status/2068122937308426676"
+      },
+      "verification": "curated",
+      "verified_at": "2026-09-09T18:49:23.231Z",
+      "verified_via": "x-syndication"
+    },
+    {
+      "id": "2067802163498352929",
+      "kind": "reset",
+      "reset_type": "partial",
+      "scope": "affected users",
+      "announced_at": "2026-06-19T02:50:28.000Z",
+      "text": "Earlier today, ~3% of Claude Code Max and Pro users hit a bug that showed an incorrect weekly usage limit, and in some cases blocked them from sending messages. \n\nThis is fixed, and we're resetting 5-hour and weekly limits for everyone affected. Apologies for the disruption.",
+      "source": {
+        "type": "x_post",
+        "author": "ClaudeDevs",
+        "url": "https://x.com/ClaudeDevs/status/2067802163498352929"
+      },
+      "verification": "curated",
+      "verified_at": "2026-09-09T18:49:24.089Z",
+      "verified_via": "x-syndication"
+    },
+    {
+      "id": "2064464557951852643",
+      "kind": "reset",
+      "reset_type": "full",
+      "scope": "all users",
+      "announced_at": "2026-06-09T21:48:01.000Z",
+      "text": "We've reset 5-hour and weekly rate limits for all users. Enjoy Fable 5!",
+      "source": {
+        "type": "x_post",
+        "author": "ClaudeDevs",
+        "url": "https://x.com/ClaudeDevs/status/2064464557951852643"
+      },
+      "verification": "curated",
+      "verified_at": "2026-09-09T18:49:24.952Z",
+      "verified_via": "x-syndication"
+    },
+    {
+      "id": "2061501787769893055",
+      "kind": "reset",
+      "reset_type": "partial",
+      "scope": "Pro and Max plans",
+      "announced_at": "2026-06-01T17:35:01.000Z",
+      "text": "We've reset 5-hour and weekly rate limits for all users on Pro and Max plans.\n\nWe fixed an issue that caused some Claude Code sessions to spawn excessive parallel subagents, burning through usage faster than expected.",
+      "source": {
+        "type": "x_post",
+        "author": "ClaudeDevs",
+        "url": "https://x.com/ClaudeDevs/status/2061501787769893055"
+      },
+      "verification": "curated",
+      "verified_at": "2026-09-09T18:49:25.827Z",
+      "verified_via": "x-syndication"
+    },
+    {
+      "id": "2055347539923308703",
+      "kind": "reset",
+      "reset_type": "full",
+      "scope": "everyone",
+      "announced_at": "2026-05-15T18:00:14.000Z",
+      "text": "Happy Friday! We've reset everyone's 5-hour and weekly rate limits.",
+      "source": {
+        "type": "x_post",
+        "author": "ClaudeDevs",
+        "url": "https://x.com/ClaudeDevs/status/2055347539923308703"
+      },
+      "verification": "curated",
+      "verified_at": "2026-09-09T18:49:26.686Z",
+      "verified_via": "x-syndication"
+    },
+    {
+      "id": "2052064938840228237",
+      "kind": "policy",
+      "reset_type": null,
+      "scope": "Pro, Max, Team, Enterprise",
+      "announced_at": "2026-05-06T16:36:21.000Z",
+      "text": "Usage limits are up, effective today we're: \n\n1) Doubling Claude Code's 5-hour limits for Pro, Max, Team and seat-based Enterprise plans\n\n2) Removing peak hours limit reduction on Claude Code for Pro and Max plans\n\n3) Substantially raising our API rate limits for Opus models",
+      "source": {
+        "type": "x_post",
+        "author": "ClaudeDevs",
+        "url": "https://x.com/ClaudeDevs/status/2052064938840228237"
+      },
+      "verification": "curated",
+      "verified_at": "2026-09-09T18:49:27.578Z",
+      "verified_via": "x-syndication"
+    },
+    {
+      "id": "2047371123185287223",
+      "kind": "reset",
+      "reset_type": "full",
+      "scope": "all subscribers",
+      "announced_at": "2026-04-23T17:44:48.000Z",
+      "text": "Over the past month, some of you reported Claude Code's quality had slipped. We investigated, and published a post-mortem on the three issues we found.\n\nAll are fixed in v2.1.116+ and we’ve reset usage limits for all subscribers.",
+      "source": {
+        "type": "x_post",
+        "author": "ClaudeDevs",
+        "url": "https://x.com/ClaudeDevs/status/2047371123185287223"
+      },
+      "verification": "curated",
+      "verified_at": "2026-09-09T18:49:28.452Z",
+      "verified_via": "x-syndication"
+    },
+    {
+      "id": "2044868953206612154",
+      "kind": "reset",
+      "reset_type": "full",
+      "scope": "all",
+      "announced_at": "2026-04-16T20:02:04.000Z",
+      "text": "We fixed a bug where rate limits on Claude subscriptions weren't properly adjusted for long context requests in Opus 4.7.\n\nWe've reset 5-hour and weekly rate limits. Enjoy Opus 4.7!",
+      "source": {
+        "type": "x_post",
+        "author": "ClaudeDevs",
+        "url": "https://x.com/ClaudeDevs/status/2044868953206612154"
+      },
+      "verification": "curated",
+      "verified_at": "2026-09-09T18:49:29.315Z",
+      "verified_via": "x-syndication"
+    }
+  ],
+  "verification": {
+    "method": "Each entry re-fetched from X's public syndication endpoint and compared on author, timestamp and verbatim text.",
+    "last_run": "2026-09-09T18:49:30.115Z",
+    "entries_verified": 15
+  }
+}

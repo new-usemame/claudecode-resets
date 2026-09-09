@@ -1,0 +1,16 @@
+{
+  "name": "claudecode-resets",
+  "version": "1.0.0",
+  "private": true,
+  "description": "An independent tracker for Claude Code usage-limit resets.",
+  "type": "module",
+  "engines": { "node": ">=22.5.0" },
+  "scripts": {
+    "start": "node src/server.js",
+    "fetch:once": "node src/fetcher.js --once",
+    "test": "node --test test/"
+  },
+  "dependencies": {
+    "web-push": "^3.6.7"
+  }
+}
