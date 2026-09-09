@@ -19,7 +19,23 @@
         "url": "https://x.com/lydiahallie/status/2095967323412930677"
       },
       "verification": "curated",
-      "verified_at": "2026-09-09T18:49:17.115Z",
+      "verified_at": "2026-09-09T18:58:15.382Z",
+      "verified_via": "x-syndication"
+    },
+    {
+      "id": "2094856679250919746",
+      "kind": "reset",
+      "reset_type": "full",
+      "scope": "all users",
+      "announced_at": "2026-09-01T18:35:27.000Z",
+      "text": "With Fable 5.1 out today, we've also reset 5-hour and weekly limits for all users.",
+      "source": {
+        "type": "x_post",
+        "author": "ClaudeDevs",
+        "url": "https://x.com/ClaudeDevs/status/2094856679250919746"
+      },
+      "verification": "curated",
+      "verified_at": "2026-09-09T18:58:16.206Z",
       "verified_via": "x-syndication"
     },
     {
@@ -35,7 +51,7 @@
         "url": "https://x.com/ClaudeDevs/status/2093742321473065266"
       },
       "verification": "curated",
-      "verified_at": "2026-09-09T18:49:17.989Z",
+      "verified_at": "2026-09-09T18:58:17.062Z",
       "verified_via": "x-syndication"
     },
     {
@@ -51,7 +67,7 @@
         "url": "https://x.com/ClaudeDevs/status/2089798442306711646"
       },
       "verification": "curated",
-      "verified_at": "2026-09-09T18:49:18.864Z",
+      "verified_at": "2026-09-09T18:58:17.936Z",
       "verified_via": "x-syndication"
     },
     {
@@ -67,7 +83,7 @@
         "url": "https://x.com/ClaudeDevs/status/2078511173759324328"
       },
       "verification": "curated",
-      "verified_at": "2026-09-09T18:49:19.747Z",
+      "verified_at": "2026-09-09T18:58:18.813Z",
       "verified_via": "x-syndication"
     },
     {
@@ -83,7 +99,7 @@
         "url": "https://x.com/ClaudeDevs/status/2077603834453770467"
       },
       "verification": "curated",
-      "verified_at": "2026-09-09T18:49:20.629Z",
+      "verified_at": "2026-09-09T18:58:19.669Z",
       "verified_via": "x-syndication"
     },
     {
@@ -99,7 +115,7 @@
         "url": "https://x.com/ClaudeDevs/status/2075279141352706215"
       },
       "verification": "curated",
-      "verified_at": "2026-09-09T18:49:21.496Z",
+      "verified_at": "2026-09-09T18:58:20.532Z",
       "verified_via": "x-syndication"
     },
     {
@@ -115,7 +131,7 @@
         "url": "https://x.com/ClaudeDevs/status/2072429181565288665"
       },
       "verification": "curated",
-      "verified_at": "2026-09-09T18:49:22.364Z",
+      "verified_at": "2026-09-09T18:58:21.388Z",
       "verified_via": "x-syndication"
     },
     {
@@ -131,7 +147,7 @@
         "url": "https://x.com/ClaudeDevs/status/2068122937308426676"
       },
       "verification": "curated",
-      "verified_at": "2026-09-09T18:49:23.231Z",
+      "verified_at": "2026-09-09T18:58:22.252Z",
       "verified_via": "x-syndication"
     },
     {
@@ -147,7 +163,7 @@
         "url": "https://x.com/ClaudeDevs/status/2067802163498352929"
       },
       "verification": "curated",
-      "verified_at": "2026-09-09T18:49:24.089Z",
+      "verified_at": "2026-09-09T18:58:23.113Z",
       "verified_via": "x-syndication"
     },
     {
@@ -163,7 +179,7 @@
         "url": "https://x.com/ClaudeDevs/status/2064464557951852643"
       },
       "verification": "curated",
-      "verified_at": "2026-09-09T18:49:24.952Z",
+      "verified_at": "2026-09-09T18:58:23.983Z",
       "verified_via": "x-syndication"
     },
     {
@@ -179,7 +195,7 @@
         "url": "https://x.com/ClaudeDevs/status/2061501787769893055"
       },
       "verification": "curated",
-      "verified_at": "2026-09-09T18:49:25.827Z",
+      "verified_at": "2026-09-09T18:58:24.839Z",
       "verified_via": "x-syndication"
     },
     {
@@ -195,7 +211,7 @@
         "url": "https://x.com/ClaudeDevs/status/2055347539923308703"
       },
       "verification": "curated",
-      "verified_at": "2026-09-09T18:49:26.686Z",
+      "verified_at": "2026-09-09T18:58:25.704Z",
       "verified_via": "x-syndication"
     },
     {
@@ -211,7 +227,7 @@
         "url": "https://x.com/ClaudeDevs/status/2052064938840228237"
       },
       "verification": "curated",
-      "verified_at": "2026-09-09T18:49:27.578Z",
+      "verified_at": "2026-09-09T18:58:26.582Z",
       "verified_via": "x-syndication"
     },
     {
@@ -227,7 +243,7 @@
         "url": "https://x.com/ClaudeDevs/status/2047371123185287223"
       },
       "verification": "curated",
-      "verified_at": "2026-09-09T18:49:28.452Z",
+      "verified_at": "2026-09-09T18:58:27.437Z",
       "verified_via": "x-syndication"
     },
     {
@@ -243,13 +259,13 @@
         "url": "https://x.com/ClaudeDevs/status/2044868953206612154"
       },
       "verification": "curated",
-      "verified_at": "2026-09-09T18:49:29.315Z",
+      "verified_at": "2026-09-09T18:58:28.297Z",
       "verified_via": "x-syndication"
     }
   ],
   "verification": {
     "method": "Each entry re-fetched from X's public syndication endpoint and compared on author, timestamp and verbatim text.",
-    "last_run": "2026-09-09T18:49:30.115Z",
-    "entries_verified": 15
+    "last_run": "2026-09-09T18:58:29.097Z",
+    "entries_verified": 16
   }
 }

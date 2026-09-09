@@ -1,5 +1,6 @@
 import { classify } from "./classify.js";
 import { hydrate } from "./hydrate.js";
+import { viaTimeline, viaSearch } from "./discovery.js";
 import { insertEvent, setKv, getKv } from "./store.js";
 import { announce } from "./notify.js";
 
@@ -22,29 +23,48 @@ const ALERT_AFTER = Number(process.env.FETCH_ALERT_AFTER ?? 3);
 const ALERT_WEBHOOK = process.env.ALERT_WEBHOOK_URL ?? "";
 const UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
 
-const SYNDICATION = (handle) =>
-  `https://syndication.twitter.com/srv/timeline-profile/screen-name/${encodeURIComponent(handle)}`;
+const BRAVE_KEY = process.env.BRAVE_API_KEY ?? "";
+// The search index is a shared, metered resource. It is only consulted when X's own
+// timeline refuses us, and then at most once an hour, which keeps the tracker alive
+// through a 429 without spending someone else's quota every ten minutes.
+const SEARCH_MIN_INTERVAL_MS = Number(process.env.SEARCH_MIN_INTERVAL_MS ?? 60 * 60_000);
+let lastSearchAt = 0;
 
 /** X snowflake ids carry their own creation time — a cheap sanity check on hydration. */
 export function snowflakeToDate(id) {
   return new Date(Number((BigInt(id) >> 22n) + 1288834974657n));
 }
 
+/**
+ * Merge every discovery route. A tick only counts as failed when EVERY route failed —
+ * one route going dark costs freshness, not coverage.
+ */
 async function discover(handle) {
-  const res = await fetch(SYNDICATION(handle), {
-    headers: { "user-agent": UA, accept: "text/html" },
-    signal: AbortSignal.timeout(20_000),
-  });
-  if (!res.ok) throw new Error(`syndication timeline ${res.status}`);
-  const html = await res.text();
-  const m = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
-  if (!m) throw new Error("syndication timeline returned no __NEXT_DATA__");
-  const entries = JSON.parse(m[1])?.props?.pageProps?.timeline?.entries ?? [];
-  const tweets = entries
-    .map((e) => e?.content?.tweet)
-    .filter((t) => t?.id_str && !t.retweeted_status && !t.in_reply_to_status_id_str);
-  if (!tweets.length) throw new Error("syndication timeline returned zero posts");
-  return tweets.map((t) => ({ id: t.id_str, text: t.full_text ?? t.text ?? "" }));
+  const merged = new Map();
+  const errors = [];
+
+  try {
+    for (const p of await viaTimeline(handle)) merged.set(p.id, p);
+  } catch (err) {
+    errors.push(`timeline: ${err.message}`);
+  }
+
+  const searchDue = Date.now() - lastSearchAt >= SEARCH_MIN_INTERVAL_MS;
+  if (!merged.size && BRAVE_KEY && searchDue) {
+    lastSearchAt = Date.now();
+    try {
+      for (const p of await viaSearch([handle], BRAVE_KEY)) merged.set(p.id, p);
+      console.log(`[fetcher] ${handle}: timeline unavailable, ${merged.size} candidate(s) via search`);
+    } catch (err) {
+      errors.push(`search: ${err.message}`);
+    }
+  } else if (!merged.size && !searchDue) {
+    errors.push("search: throttled");
+  }
+
+  if (!merged.size) throw new Error(errors.join(" | ") || "no candidates from any route");
+  if (errors.length) console.warn(`[fetcher] ${handle}: partial discovery — ${errors.join(" | ")}`);
+  return [...merged.values()];
 }
 
 async function raiseAlert(db, handle, message, streak) {
@@ -95,12 +115,13 @@ export async function fetchOnce(db) {
     }
 
     for (const candidate of candidates) {
-      // Screen on the timeline text first so we only hydrate plausible announcements.
-      if (!classify(candidate.text)) continue;
+      // Screening on the discovery hint keeps us from hydrating the whole timeline;
+      // a candidate with no usable hint is hydrated anyway rather than dropped.
+      if (candidate.hint && candidate.hint.length > 40 && !classify(candidate.hint)) continue;
 
       let post;
       try {
-        post = await hydrate(candidate.id, handle);
+        post = await hydrate(candidate.id, candidate.handle ?? handle);
       } catch (err) {
         console.warn(`[fetcher] refusing to store ${candidate.id}: ${err.message}`);
         continue;
