@@ -224,6 +224,41 @@ const server = createServer(async (req, res) => {
 
     if (path === "/api/push/key") return sendJson(res, 200, { key: vapidPublicKey() });
 
+    // Operational endpoints for proving the notification path actually delivers.
+    // Guarded by ADMIN_TOKEN; with no token set they are simply off.
+    if (path.startsWith("/api/admin/")) {
+      const token = process.env.ADMIN_TOKEN;
+      const given = req.headers["x-admin-token"] ?? url.searchParams.get("token");
+      if (!token || given !== token) return sendJson(res, 404, { error: "not found" });
+
+      if (path === "/api/admin/subscribers") {
+        return sendJson(res, 200, {
+          push: db.prepare(`SELECT COUNT(*) n FROM push_subs`).get().n,
+          email_pending: db.prepare(`SELECT COUNT(*) n FROM email_subs WHERE confirmed_at IS NULL`).get().n,
+          email_confirmed: db.prepare(`SELECT COUNT(*) n FROM email_subs WHERE confirmed_at IS NOT NULL`).get().n,
+          sources: fetcherHealth(db),
+        });
+      }
+
+      if (path === "/api/admin/test-notify" && req.method === "POST") {
+        const latest = allResets(db)[0];
+        if (!latest) return sendJson(res, 409, { error: "no reset to announce" });
+        // A test must not consume the real event's once-per-event guard, so it
+        // announces under a throwaway id and leaves the live record untouched.
+        const { announce } = await import("./notify.js");
+        const result = await announce(db, { ...latest, id: `test-${Date.now()}` });
+        return sendJson(res, 200, { announced: latest.id, delivered: result });
+      }
+
+      if (path === "/api/admin/fetch-now" && req.method === "POST") {
+        const { fetchOnce } = await import("./fetcher.js");
+        const stored = await fetchOnce(db);
+        return sendJson(res, 200, { stored: stored.map((e) => e.id), sources: fetcherHealth(db) });
+      }
+
+      return sendJson(res, 404, { error: "not found" });
+    }
+
     if (path === "/api/push/subscribe" && req.method === "POST") {
       const sub = JSON.parse(await readBody(req));
       if (!sub?.endpoint || !sub?.keys?.p256dh || !sub?.keys?.auth) {
