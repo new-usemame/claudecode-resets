@@ -34,14 +34,22 @@ export async function viaTimeline(handle) {
   return posts;
 }
 
-export async function viaSearch(handles, apiKey) {
+/**
+ * @param {string[]} handles  accounts we are willing to accept results from
+ * @param {string} apiKey     Brave Search key
+ * @param {number} depth      how many queries to spend. The live fetcher passes 1 —
+ *                            search is a metered shared resource and one targeted query
+ *                            finds a fresh announcement; the manual coverage sweep in
+ *                            scripts/discover.mjs is where breadth belongs.
+ */
+export async function viaSearch(handles, apiKey, depth = 1) {
   if (!apiKey) throw new Error("no BRAVE_API_KEY configured");
   const watched = new Set(handles.map((h) => h.toLowerCase()));
   const queries = [
+    `site:x.com ${handles[0]} reset limits`,
     `${handles[0]} reset 5-hour and weekly rate limits`,
-    `site:x.com ${handles[0]} status reset limits`,
     `"we've reset" usage limits Claude Code x.com`,
-  ];
+  ].slice(0, Math.max(1, depth));
   const found = new Map();
   const errors = [];
   for (const q of queries) {

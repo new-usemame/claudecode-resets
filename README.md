@@ -52,7 +52,7 @@ exiting non-zero on any mismatch. As of the last run: **15/15 verified**.
 
 ## How the live tracker keeps up
 
-`src/fetcher.js` polls the watched accounts' public timelines every 10 minutes:
+`src/fetcher.js` polls every 10 minutes:
 
 1. **discover** — X's public syndication timeline lists recent post ids
 2. **screen** — `src/classify.js` decides whether the text is a reset, a limit change, or neither
@@ -63,6 +63,20 @@ exiting non-zero on any mismatch. As of the last run: **15/15 verified**.
 A newly detected event is stored as `provisional`. `data/resets.json` is the curated
 history, re-applied on every boot, so a human correction in git always wins over
 whatever the classifier guessed.
+
+### How fresh is it, honestly
+
+Step 1 is the weak link, and it is worth being straight about. X's public timeline
+endpoint rate-limits hard by IP — it has returned 429 on every address I have tried,
+including the production host — so most of the time discovery falls back to a search
+index, which is checked at most every 15 minutes and only after the timeline refuses.
+A search index also takes its own time to see a brand-new post.
+
+So: an announcement usually appears here within the hour, not within the minute, and a
+run of bad luck can make it longer. Hydration and verification are exact; discovery
+latency is the honest caveat. If you need the instant signal, follow
+[@ClaudeDevs](https://x.com/ClaudeDevs) directly — that is the source, and this site
+has never pretended otherwise.
 
 If discovery breaks — X changes the endpoint, rate-limits us, whatever — the fetcher
 **says so**: consecutive failures raise an alert to the log, to `ALERT_WEBHOOK_URL`, and
@@ -98,6 +112,9 @@ npm run fetch:once        # one fetch pass, then exit
 | `RESEND_API_KEY` / `MAIL_FROM` | email alerts; email is disabled if unset |
 | `WATCH_ACCOUNTS` | comma-separated handles to watch (default `ClaudeDevs`) |
 | `FETCH_INTERVAL_MS` | poll interval (default 600000) |
+| `BRAVE_API_KEY` | Brave Search key for the fallback discovery route |
+| `SEARCH_MIN_INTERVAL_MS` | floor between search fallbacks (default 900000) |
+| `FETCH_STALE_AFTER_MS` | how long with no successful discovery before alerting (default 3h) |
 | `ALERT_WEBHOOK_URL` | POSTed a line of text when a source goes blind |
 | `TELEGRAM_URL` | shows the Telegram button when a channel exists |
 | `FETCHER` | `off` to run the web server without polling |

@@ -32,7 +32,7 @@ const BRAVE_KEY = process.env.BRAVE_API_KEY ?? "";
 // The search index is a shared, metered resource. It is only consulted when X's own
 // timeline refuses us, and then at most once an hour, which keeps the tracker alive
 // through a 429 without spending someone else's quota every ten minutes.
-const SEARCH_MIN_INTERVAL_MS = Number(process.env.SEARCH_MIN_INTERVAL_MS ?? 60 * 60_000);
+const SEARCH_MIN_INTERVAL_MS = Number(process.env.SEARCH_MIN_INTERVAL_MS ?? 15 * 60_000);
 let lastSearchAt = 0;
 
 /** X snowflake ids carry their own creation time — a cheap sanity check on hydration. */
@@ -58,7 +58,7 @@ async function discover(handle) {
   if (!merged.size && BRAVE_KEY && searchDue) {
     lastSearchAt = Date.now();
     try {
-      for (const p of await viaSearch([handle], BRAVE_KEY)) merged.set(p.id, p);
+      for (const p of await viaSearch([handle], BRAVE_KEY, 1)) merged.set(p.id, p);
       console.log(`[fetcher] ${handle}: timeline unavailable, ${merged.size} candidate(s) via search`);
     } catch (err) {
       errors.push(`search: ${err.message}`);
