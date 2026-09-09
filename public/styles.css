@@ -1843,3 +1843,5 @@ a:hover,a:focus-visible {
   .masthead-side { gap: 2px; }
   .log-item-kind { font-size: .62rem; padding: .16rem .32rem; }
 }
+
+.log-item-kind--provisional { background: var(--cg-empty); color: var(--ink-2); }

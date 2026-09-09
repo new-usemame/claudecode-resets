@@ -228,8 +228,53 @@ const server = createServer(async (req, res) => {
       return send(res, 200, rss(allEvents(db)), { "content-type": "application/rss+xml; charset=utf-8" });
     }
 
+    if (path === "/llms.txt") {
+      const resets = allResets(db);
+      const stats = computeStats(resets);
+      return send(res, 200, `# ${SITE.name}
+
+> Independent tracker for Claude Code usage-limit resets, sourced from @${SITE.account} and
+> Claude Code team members on X. Not affiliated with Anthropic.
+
+Answers: "how long since Anthropic last reset Claude Code limits?" and "how often does that happen?"
+
+## Snapshot
+- Last reset: ${stats.last_reset_at ?? "none tracked"}${resets[0] ? ` (${resets[0].reset_type}, ${resets[0].scope ?? "scope unrecorded"}) ${resets[0].url}` : ""}
+- Resets tracked: ${stats.total}
+- Mean gap between resets: ${stats.avg_interval_days ?? "n/a"} days
+- Longest gap: ${stats.longest_wait_days ?? "n/a"} days
+- Limit-policy changes tracked separately (not counted as resets): ${allEvents(db).length - resets.length}
+
+## Machine-readable
+- Latest + stats: ${SITE.origin}/api/v1/status
+- All announcements: ${SITE.origin}/api/v1/resets?kind=all&limit=200
+- Feed: ${SITE.origin}/rss.xml
+- OpenAPI: ${SITE.origin}/api/openapi.json
+- Source health: ${SITE.origin}/healthz
+
+## What the fields mean
+- kind "reset": usage counters were flushed. kind "policy": the ceiling moved, nothing was
+  flushed — deliberately excluded from every reset statistic on this site.
+- reset_type "full": everyone. "partial": one plan tier, or only users affected by an incident.
+- announced_at: UTC, taken from the source post itself, not from when this site noticed it.
+- verification "curated": reviewed by a human. "provisional": detected automatically, still
+  sourced from the original post.
+
+## Provenance
+Every entry is re-fetched from X's own public endpoint and compared on author, timestamp and
+verbatim text; anything that cannot be verified is not published. Re-runnable:
+https://github.com/new-usemame/claudecode-resets (scripts/verify-sources.mjs, MIT).
+
+## Caveat worth repeating
+Discovery of brand-new posts depends on a search index, so an announcement typically appears
+here within the hour rather than within the minute. For the instant signal follow ${SITE.accountUrl}.
+`, { "content-type": "text/plain; charset=utf-8" });
+    }
+
     if (path === "/robots.txt") {
-      return send(res, 200, `User-agent: *\nAllow: /\nSitemap: ${SITE.origin}/sitemap.xml\n`);
+      return send(res, 200,
+        `User-agent: *\nAllow: /\nSitemap: ${SITE.origin}/sitemap.xml\n` +
+        `# Machine-readable summary: ${SITE.origin}/llms.txt\n`);
     }
 
     if (path === "/sitemap.xml") {

@@ -191,11 +191,16 @@ function logItem(e, now) {
     : e.reset_type === "partial"
       ? `<span class="log-item-kind log-item-kind--partial">partial</span>`
       : "";
+  // An entry the fetcher classified but no human has reviewed yet is still sourced
+  // from the post itself — but say so, rather than let it pass as checked.
+  const provisional = e.verification === "provisional"
+    ? `<span class="log-item-kind log-item-kind--provisional" title="Detected automatically and sourced from the original post, but not yet reviewed by a human">auto</span>`
+    : "";
   return `    <li class="log-item" data-kind="${e.kind}">
       <img class="log-avatar" src="${AVATAR}" alt="" aria-hidden="true" loading="lazy" width="44" height="44" />
       <div class="log-bubble">
         <div class="log-item-meta">
-${kindChip ? `\n          ${kindChip}` : ""}
+${kindChip ? `\n          ${kindChip}` : ""}${provisional ? `\n          ${provisional}` : ""}
           <span class="log-item-time" data-role="relative-time" data-datetime="${esc(e.announced_at)}">${esc(relativeTime(e.announced_at, now))}</span>
           <span class="log-item-abs" data-role="absolute-time" data-datetime="${esc(e.announced_at)}">${esc(absoluteUTC(e.announced_at))}</span>
         </div>
