@@ -173,7 +173,11 @@ const server = createServer(async (req, res) => {
     // certificate rather than throwing a scary TLS error at anyone who types it),
     // but it redirects rather than serving the page twice.
     const host = String(req.headers.host ?? "");
-    if (host.startsWith("www.") && SITE.origin.startsWith("https://")) {
+    // /.well-known must never be redirected: it is where ACME answers the HTTP-01
+    // challenge, and bouncing that to the apex means www can never get a certificate
+    // — the exact failure this redirect was added to prevent.
+    if (host.startsWith("www.") && SITE.origin.startsWith("https://") &&
+        !path.startsWith("/.well-known/")) {
       return send(res, 301, "", {
         location: `${SITE.origin}${req.url}`,
         "cache-control": "public, max-age=86400",
