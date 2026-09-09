@@ -19,7 +19,12 @@ import { announce } from "./notify.js";
  */
 const ACCOUNTS = (process.env.WATCH_ACCOUNTS ?? "ClaudeDevs").split(",").map((s) => s.trim()).filter(Boolean);
 const INTERVAL_MS = Number(process.env.FETCH_INTERVAL_MS ?? 10 * 60_000);
-const ALERT_AFTER = Number(process.env.FETCH_ALERT_AFTER ?? 3);
+// Alerting is on DISCOVERY STALENESS, not on consecutive tick failures. Most ticks
+// legitimately find nothing new: X's timeline 429s and the search route is
+// deliberately throttled to once an hour, so counting those as failures would page
+// about a system that is working exactly as designed. What actually matters is how
+// long it has been since ANY route last gave us a look at the account.
+const STALE_AFTER_MS = Number(process.env.FETCH_STALE_AFTER_MS ?? 3 * 60 * 60_000);
 const ALERT_WEBHOOK = process.env.ALERT_WEBHOOK_URL ?? "";
 const UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
 
@@ -67,10 +72,10 @@ async function discover(handle) {
   return [...merged.values()];
 }
 
-async function raiseAlert(db, handle, message, streak) {
-  const line = `[fetcher] ALERT ${handle}: ${message} (${streak} consecutive failures)`;
+async function raiseAlert(db, handle, message, staleMinutes) {
+  const line = `[fetcher] ALERT ${handle}: ${message} — no successful discovery for ${staleMinutes}m`;
   console.error(line);
-  setKv(db, `fetch:alert:${handle}`, `${new Date().toISOString()} ${message} x${streak}`);
+  setKv(db, `fetch:alert:${handle}`, `${new Date().toISOString()} ${message} stale=${staleMinutes}m`);
   if (!ALERT_WEBHOOK) return;
   try {
     await fetch(ALERT_WEBHOOK, {
@@ -85,14 +90,20 @@ async function raiseAlert(db, handle, message, streak) {
 }
 
 /** Health of every watched source, for /healthz and for a human reading logs. */
-export function fetcherHealth(db) {
-  return ACCOUNTS.map((handle) => ({
-    account: handle,
-    last_success: getKv(db, `fetch:ok:${handle}`),
-    last_error: getKv(db, `fetch:err:${handle}`),
-    failure_streak: Number(getKv(db, `fetch:streak:${handle}`) ?? 0),
-    alerting: Number(getKv(db, `fetch:streak:${handle}`) ?? 0) >= ALERT_AFTER,
-  }));
+export function fetcherHealth(db, now = Date.now()) {
+  return ACCOUNTS.map((handle) => {
+    const lastSuccess = getKv(db, `fetch:ok:${handle}`);
+    const staleMs = lastSuccess ? now - Date.parse(lastSuccess) : null;
+    return {
+      account: handle,
+      last_success: lastSuccess,
+      last_error: getKv(db, `fetch:err:${handle}`),
+      minutes_since_discovery: staleMs == null ? null : Math.round(staleMs / 60_000),
+      stale_after_minutes: Math.round(STALE_AFTER_MS / 60_000),
+      // Never seen a success yet is a starting state, not an outage.
+      alerting: staleMs != null && staleMs > STALE_AFTER_MS,
+    };
+  });
 }
 
 /** One pass over every watched account. Returns the events it newly stored. */
@@ -104,13 +115,15 @@ export async function fetchOnce(db) {
     try {
       candidates = await discover(handle);
       setKv(db, `fetch:ok:${handle}`, new Date().toISOString());
-      setKv(db, `fetch:streak:${handle}`, 0);
     } catch (err) {
-      const streak = Number(getKv(db, `fetch:streak:${handle}`) ?? 0) + 1;
-      setKv(db, `fetch:streak:${handle}`, streak);
       setKv(db, `fetch:err:${handle}`, `${new Date().toISOString()} ${err.message}`);
-      if (streak >= ALERT_AFTER) await raiseAlert(db, handle, err.message, streak);
-      else console.warn(`[fetcher] ${handle}: ${err.message} (streak ${streak})`);
+      const [health] = fetcherHealth(db).filter((h) => h.account === handle);
+      if (health?.alerting) {
+        await raiseAlert(db, handle, err.message, health.minutes_since_discovery);
+      } else {
+        console.warn(`[fetcher] ${handle}: ${err.message} ` +
+                     `(last discovery ${health?.minutes_since_discovery ?? "never"}m ago)`);
+      }
       continue;
     }
 
