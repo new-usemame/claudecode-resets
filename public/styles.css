@@ -1833,8 +1833,13 @@ a:hover,a:focus-visible {
 
 /* "Claude Code Resets" is a longer wordmark than the reference's; keep the masthead
    controls on the same row at phone widths instead of letting them wrap below. */
+/* The reference lets the masthead wrap at phone widths, which is right — but its
+   wordmark is "Codex Resets" and ours is half again as long, so with the reference's
+   own type scale ours wraps the X and theme controls onto a second row. Trimming the
+   title a little keeps the single-row masthead the reference actually shows. */
 @media (width<=640px) {
-  .masthead-title { font-size: clamp(1.3rem, 6.4vw, 1.75rem); }
-  .masthead { gap: 10px; }
+  .masthead-title { font-size: clamp(1.05rem, 5.1vw, 1.75rem); }
+  .masthead { gap: 8px; }
+  .masthead-side { gap: 2px; }
   .log-item-kind { font-size: .62rem; padding: .16rem .32rem; }
 }
