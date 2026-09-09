@@ -142,6 +142,17 @@ const server = createServer(async (req, res) => {
   const path = url.pathname;
 
   try {
+    // One canonical host. www is a real domain on the service (so it gets a
+    // certificate rather than throwing a scary TLS error at anyone who types it),
+    // but it redirects rather than serving the page twice.
+    const host = String(req.headers.host ?? "");
+    if (host.startsWith("www.") && SITE.origin.startsWith("https://")) {
+      return send(res, 301, "", {
+        location: `${SITE.origin}${req.url}`,
+        "cache-control": "public, max-age=86400",
+      });
+    }
+
     if (req.method === "OPTIONS") {
       return send(res, 204, "", {
         "access-control-allow-origin": "*",
