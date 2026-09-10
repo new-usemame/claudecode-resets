@@ -10,6 +10,18 @@ import { vapidPublicKey, addPushSub, removePushSub } from "./notify.js";
 import { startFetcher, fetcherHealth } from "./fetcher.js";
 
 const PORT = Number(process.env.PORT || 3000);
+
+/**
+ * Hosts this deployment actually answers for. Used to decide whether a www host is
+ * safe to redirect to its apex — never trust the Host header as a redirect target.
+ */
+const SERVED_HOSTS = new Set(
+  [
+    new URL(SITE.origin).hostname,
+    ...String(process.env.SERVED_HOSTS ?? "claudecode-resets.com,claude-reset.com")
+      .split(",").map((h) => h.trim().toLowerCase()).filter(Boolean),
+  ],
+);
 const PUBLIC = join(REPO_ROOT, "public");
 const db = openDb();
 
@@ -175,14 +187,25 @@ const server = createServer(async (req, res) => {
     // The site answers on more than one domain. Strip www to that SAME domain's apex
     // rather than jumping to the canonical origin, so a visitor who typed one domain
     // is not silently moved to another one.
+    //
+    // The Host header is attacker-controlled, so the stripped host is only ever used
+    // as a redirect target when it is one we actually serve. Without that check,
+    // `Host: www.evil.com` turns this into an open redirect that sends visitors off
+    // the site under our own domain's good name.
+    //
     // /.well-known is never redirected: it is where ACME answers the HTTP-01
     // challenge, and bouncing it means the host can never get a certificate.
-    const host = String(req.headers.host ?? "").split(":")[0];
-    if (host.startsWith("www.") && host.length > 4 && !path.startsWith("/.well-known/")) {
-      return send(res, 301, "", {
-        location: `https://${host.slice(4)}${req.url}`,
-        "cache-control": "public, max-age=86400",
-      });
+    const host = String(req.headers.host ?? "").split(":")[0].toLowerCase();
+    if (host.startsWith("www.") && !path.startsWith("/.well-known/")) {
+      const apex = host.slice(4);
+      if (SERVED_HOSTS.has(apex)) {
+        return send(res, 301, "", {
+          location: `https://${apex}${req.url}`,
+          "cache-control": "public, max-age=86400",
+        });
+      }
+      // A www host we do not serve is not ours to redirect anywhere.
+      return send(res, 404, "Not found");
     }
 
     if (req.method === "OPTIONS") {
