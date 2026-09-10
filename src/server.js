@@ -338,9 +338,10 @@ here within the hour rather than within the minute. For the instant signal follo
     }
 
     if (path === "/robots.txt") {
+      const self = SERVED_HOSTS.has(host) ? `https://${host}` : SITE.origin;
       return send(res, 200,
-        `User-agent: *\nAllow: /\nSitemap: ${SITE.origin}/sitemap.xml\n` +
-        `# Machine-readable summary: ${SITE.origin}/llms.txt\n`);
+        `User-agent: *\nAllow: /\nSitemap: ${self}/sitemap.xml\n` +
+        `# Machine-readable summary: ${self}/llms.txt\n`);
     }
 
     if (path === "/sitemap.xml") {
@@ -348,10 +349,15 @@ here within the hour rather than within the minute. For the instant signal follo
       // lands, and a sitemap that claims otherwise trains crawlers to ignore it.
       const newest = allEvents(db)[0]?.announced_at ?? new Date().toISOString();
       const lastmod = newest.slice(0, 10);
+      // A sitemap describes the host it is served from, not the canonical one. Listing
+      // claude-reset.com URLs in claudecode-resets.com's sitemap is a cross-domain
+      // submission that Search Console flags. The canonical <link> already tells Google
+      // which host to prefer; the sitemap's job is just to enumerate this host's pages.
+      const origin = SERVED_HOSTS.has(host) ? `https://${host}` : SITE.origin;
       const urls = [
-        { loc: `${SITE.origin}/`, changefreq: "daily", priority: "1.0", lastmod },
-        { loc: `${SITE.origin}/api/docs`, changefreq: "monthly", priority: "0.5" },
-        { loc: `${SITE.origin}/sponsor`, changefreq: "monthly", priority: "0.3" },
+        { loc: `${origin}/`, changefreq: "daily", priority: "1.0", lastmod },
+        { loc: `${origin}/api/docs`, changefreq: "monthly", priority: "0.5" },
+        { loc: `${origin}/sponsor`, changefreq: "monthly", priority: "0.3" },
       ];
       const body = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
