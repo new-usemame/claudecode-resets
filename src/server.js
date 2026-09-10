@@ -172,14 +172,15 @@ const server = createServer(async (req, res) => {
     // One canonical host. www is a real domain on the service (so it gets a
     // certificate rather than throwing a scary TLS error at anyone who types it),
     // but it redirects rather than serving the page twice.
-    const host = String(req.headers.host ?? "");
-    // /.well-known must never be redirected: it is where ACME answers the HTTP-01
-    // challenge, and bouncing that to the apex means www can never get a certificate
-    // — the exact failure this redirect was added to prevent.
-    if (host.startsWith("www.") && SITE.origin.startsWith("https://") &&
-        !path.startsWith("/.well-known/")) {
+    // The site answers on more than one domain. Strip www to that SAME domain's apex
+    // rather than jumping to the canonical origin, so a visitor who typed one domain
+    // is not silently moved to another one.
+    // /.well-known is never redirected: it is where ACME answers the HTTP-01
+    // challenge, and bouncing it means the host can never get a certificate.
+    const host = String(req.headers.host ?? "").split(":")[0];
+    if (host.startsWith("www.") && host.length > 4 && !path.startsWith("/.well-known/")) {
       return send(res, 301, "", {
-        location: `${SITE.origin}${req.url}`,
+        location: `https://${host.slice(4)}${req.url}`,
         "cache-control": "public, max-age=86400",
       });
     }
