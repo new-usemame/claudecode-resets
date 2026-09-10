@@ -344,9 +344,28 @@ here within the hour rather than within the minute. For the instant signal follo
     }
 
     if (path === "/sitemap.xml") {
-      return send(res, 200, `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>${SITE.origin}/</loc></url></urlset>`,
-        { "content-type": "application/xml; charset=utf-8" });
+      // lastmod is the newest announcement: the homepage genuinely changes when one
+      // lands, and a sitemap that claims otherwise trains crawlers to ignore it.
+      const newest = allEvents(db)[0]?.announced_at ?? new Date().toISOString();
+      const lastmod = newest.slice(0, 10);
+      const urls = [
+        { loc: `${SITE.origin}/`, changefreq: "daily", priority: "1.0", lastmod },
+        { loc: `${SITE.origin}/api/docs`, changefreq: "monthly", priority: "0.5" },
+        { loc: `${SITE.origin}/sponsor`, changefreq: "monthly", priority: "0.3" },
+      ];
+      const body = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls.map((u) => `  <url>
+    <loc>${esc(u.loc)}</loc>${u.lastmod ? `
+    <lastmod>${u.lastmod}</lastmod>` : ""}
+    <changefreq>${u.changefreq}</changefreq>
+    <priority>${u.priority}</priority>
+  </url>`).join("\n")}
+</urlset>`;
+      return send(res, 200, body, {
+        "content-type": "application/xml; charset=utf-8",
+        "cache-control": "public, max-age=3600",
+      });
     }
 
     if (path === "/api/push/key") return sendJson(res, 200, { key: vapidPublicKey() });
