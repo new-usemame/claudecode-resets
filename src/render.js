@@ -281,6 +281,7 @@ export function renderPage({ events, resets, stats, calendar, vapidKey, now = Da
   <link rel="stylesheet" href="/styles.css" />
   <script type="module" src="/app.js"></script>
   <script>window.__CR__ = ${jsonScript(bootstrap)};</script>
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "cadde8336dbd447e986bb934c1ef1003"}'></script>
 </head>
 <body>
   <div id="app" data-ssr="1">
